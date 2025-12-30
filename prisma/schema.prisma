@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Post {
+  id                String    @id @default(uuid()) @db.Uuid
+  subreddit         String
+  subredditSize     Int?      @map("subreddit_size")
+  originalPostDate  DateTime? @map("original_post_date") @db.Timestamptz
+  upvotes           Int?
+  postUrl           String    @unique @map("post_url")
+  originalPost      String?   @map("original_post") @db.Text
+  postSummary       String?   @map("post_summary") @db.Text
+  potentialSolution String?   @map("potential_solution") @db.Text
+  keyword           String?
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  cardPlacements CardPlacement[]
+
+  @@map("posts")
+}
+
+model Board {
+  id        String    @id @default(uuid()) @db.Uuid
+  name      String
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  lists          List[]
+  cardPlacements CardPlacement[]
+
+  @@map("boards")
+}
+
+model List {
+  id        String    @id @default(uuid()) @db.Uuid
+  boardId   String    @map("board_id") @db.Uuid
+  name      String
+  position  Int?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+
+  board          Board           @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cardPlacements CardPlacement[]
+
+  @@map("lists")
+}
+
+model CardPlacement {
+  id       String   @id @default(uuid()) @db.Uuid
+  boardId  String   @map("board_id") @db.Uuid
+  listId   String   @map("list_id") @db.Uuid
+  postId   String   @map("post_id") @db.Uuid
+  position Int?
+
+  board Board @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  list  List  @relation(fields: [listId], references: [id], onDelete: Cascade)
+  post  Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([boardId, postId])
+  @@map("card_placements")
+}
+
