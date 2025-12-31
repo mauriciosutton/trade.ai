@@ -124,7 +124,7 @@ export default function DiscoverModal({ isOpen, onClose }: DiscoverModalProps) {
               placeholder="e.g., entrepreneur, startups, smallbusiness"
             />
             <p className="mt-1.5 text-xs text-slate-500">
-              Enter the subreddit name without the "r/" prefix
+              Enter the subreddit name without the &quot;r/&quot; prefix
             </p>
           </div>
 
