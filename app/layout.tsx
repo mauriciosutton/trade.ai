@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Problem Radar",
+  title: "trade.ai",
   description: "Visualize AI-detected business problems from Reddit",
 };
 

@@ -70,10 +70,10 @@ export default function Topics() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Topics</h1>
-        <p className="text-slate-600 mt-2">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">Topics</h1>
+        <p className="text-sm sm:text-base text-slate-600 mt-2">
           All topics found in posts ({topics.length} unique topics)
         </p>
       </div>
@@ -93,13 +93,13 @@ export default function Topics() {
       ) : (
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
-            <table className="w-full">
+            <table className="w-full min-w-[300px]">
               <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Topic
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-4 sm:px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                     Count
                   </th>
                 </tr>
@@ -107,12 +107,12 @@ export default function Topics() {
               <tbody className="bg-white divide-y divide-slate-200">
                 {topics.map((item, index) => (
                   <tr key={index} className="hover:bg-slate-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-slate-900">
+                    <td className="px-4 sm:px-6 py-4">
+                      <div className="text-sm font-medium text-slate-900 break-words">
                         {item.topic}
                       </div>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-4 sm:px-6 py-4 whitespace-nowrap">
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
                         {item.count}
                       </span>

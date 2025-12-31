@@ -1,4 +1,4 @@
-# Problem Radar
+# trade.ai
 
 A lightweight web app that visualizes AI-detected business problems scraped from Reddit. Built with Next.js, Supabase, and n8n.
 

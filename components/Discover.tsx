@@ -83,14 +83,14 @@ export default function DiscoverModal({ isOpen, onClose }: DiscoverModalProps) {
   return (
     <div className="modal-backdrop animate-fade-in" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up"
+        className="bg-white rounded-2xl sm:rounded-2xl max-w-2xl w-full h-full sm:h-auto sm:max-h-[90vh] overflow-y-auto shadow-2xl animate-slide-up m-0 sm:m-4"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-center justify-between mb-2">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">Find Posts</h2>
-              <p className="text-sm text-slate-600 mt-1">
+        <div className="p-4 sm:p-6 border-b border-slate-100">
+          <div className="flex items-start justify-between mb-2 gap-2">
+            <div className="flex-1 min-w-0">
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Find Posts</h2>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1">
                 Discover new problems from Reddit communities
               </p>
             </div>
@@ -105,8 +105,8 @@ export default function DiscoverModal({ isOpen, onClose }: DiscoverModalProps) {
           </div>
         </div>
 
-        <div className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="p-4 sm:p-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div>
             <label
               htmlFor="subreddit"

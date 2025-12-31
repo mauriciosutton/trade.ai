@@ -11,6 +11,165 @@ interface PostModalProps {
 
 type TabType = "solution" | "summary" | "original" | "notes";
 
+// Component to format solution text with visual cards
+function FormattedSolution({ text }: { text: string }) {
+  // Split by double newlines first, then process
+  const sections = text.split(/\n\s*\n/).filter(s => s.trim());
+  
+  // Try to identify structured sections
+  const structuredSections: Array<{ type: string; title: string; content: string }> = [];
+  
+  sections.forEach((section) => {
+    const trimmed = section.trim();
+    
+    // Look for patterns like "**Business Idea:**", "Description:", etc.
+    const headingMatch = trimmed.match(/^\*\*([^*:]+):?\*\*|^([A-Z][^:\n]+):/);
+    
+    if (headingMatch) {
+      const title = (headingMatch[1] || headingMatch[2] || '').trim();
+      const content = trimmed.replace(/^\*\*[^*:]+:?\*\*\s*/, '').replace(/^[A-Z][^:\n]+:\s*/, '').trim();
+      
+      // Determine section type
+      let type = 'general';
+      const titleLower = title.toLowerCase();
+      if (titleLower.includes('idea') || titleLower.includes('business')) type = 'idea';
+      else if (titleLower.includes('description')) type = 'description';
+      else if (titleLower.includes('feature') || titleLower.includes('benefit')) type = 'feature';
+      else if (titleLower.includes('target') || titleLower.includes('market')) type = 'market';
+      
+      structuredSections.push({ type, title, content });
+    } else {
+      // Check if it's a list
+      const listItems = trimmed.split('\n').filter(line => /^[-•*]\s|^\d+\.\s/.test(line.trim()));
+      if (listItems.length > 0) {
+        structuredSections.push({ 
+          type: 'list', 
+          title: '', 
+          content: trimmed 
+        });
+      } else {
+        structuredSections.push({ 
+          type: 'general', 
+          title: '', 
+          content: trimmed 
+        });
+      }
+    }
+  });
+  
+  return (
+    <div className="space-y-4">
+      {structuredSections.map((section, idx) => {
+        if (section.type === 'idea') {
+          return (
+            <div key={idx} className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-blue-500 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-slate-900 mb-2">{section.title}</h4>
+                  <p className="text-slate-700 leading-relaxed">
+                    {formatInlineText(section.content)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (section.type === 'description') {
+          return (
+            <div key={idx} className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+              <div className="flex items-start gap-3">
+                <div className="flex-shrink-0 w-10 h-10 bg-slate-400 rounded-lg flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                </div>
+                <div className="flex-1">
+                  <h4 className="text-lg font-bold text-slate-900 mb-3">{section.title}</h4>
+                  <p className="text-slate-700 leading-relaxed">
+                    {formatInlineText(section.content)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          );
+        }
+        
+        if (section.type === 'list') {
+          const listItems = section.content.split('\n').filter(line => /^[-•*]\s|^\d+\.\s/.test(line.trim()));
+          return (
+            <div key={idx} className="bg-emerald-50 rounded-xl p-6 border border-emerald-100">
+              <ul className="space-y-3">
+                {listItems.map((item, itemIdx) => (
+                  <li key={itemIdx} className="flex items-start gap-3">
+                    <div className="flex-shrink-0 w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center mt-0.5">
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <span className="text-slate-700 leading-relaxed flex-1">
+                      {formatInlineText(item.replace(/^[-•*]\s|^\d+\.\s/, '').trim())}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          );
+        }
+        
+        // General content card
+        return (
+          <div key={idx} className="bg-white rounded-xl p-6 border border-slate-200">
+            {section.title && (
+              <h4 className="text-lg font-bold text-slate-900 mb-3">{section.title}</h4>
+            )}
+            <div className="text-slate-700 leading-relaxed space-y-3">
+              {section.content.split('\n').filter(line => line.trim()).map((para, paraIdx) => (
+                <p key={paraIdx}>{formatInlineText(para.trim())}</p>
+              ))}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// Helper function to format inline text (bold, etc.)
+function formatInlineText(text: string) {
+  const parts: (string | JSX.Element)[] = [];
+  let currentIndex = 0;
+  const boldRegex = /\*\*([^*]+)\*\*/g;
+  let match;
+  let lastIndex = 0;
+  
+  while ((match = boldRegex.exec(text)) !== null) {
+    // Add text before the match
+    if (match.index > lastIndex) {
+      parts.push(text.substring(lastIndex, match.index));
+    }
+    // Add the bold text
+    parts.push(
+      <strong key={match.index} className="font-semibold text-slate-900">
+        {match[1]}
+      </strong>
+    );
+    lastIndex = boldRegex.lastIndex;
+  }
+  
+  // Add remaining text
+  if (lastIndex < text.length) {
+    parts.push(text.substring(lastIndex));
+  }
+  
+  return parts.length > 0 ? <>{parts}</> : text;
+}
+
 export default function PostModal({ post, onClose }: PostModalProps) {
   const [copied, setCopied] = useState(false);
   const [activeTab, setActiveTab] = useState<TabType>("solution");
@@ -136,22 +295,20 @@ export default function PostModal({ post, onClose }: PostModalProps) {
     return ["general"];
   };
 
-  const getComments = () => Math.floor(Math.random() * 30) + 1;
-
   const priority = getPriority();
   const tags = getTags();
 
   return (
     <div className="modal-backdrop animate-fade-in" onClick={onClose}>
       <div
-        className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-hidden shadow-2xl animate-slide-up"
+        className="bg-white rounded-2xl sm:rounded-2xl max-w-5xl w-full h-full sm:h-auto sm:max-h-[90vh] overflow-hidden shadow-2xl animate-slide-up m-0 sm:m-4"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-6 border-b border-slate-100">
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm font-semibold text-blue-600">
+        <div className="p-4 sm:p-6 border-b border-slate-100">
+          <div className="flex items-start justify-between mb-3 sm:mb-4 gap-2">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap flex-1 min-w-0">
+              <span className="text-xs sm:text-sm font-semibold text-blue-600">
                 r/{post.subreddit}
               </span>
               <span className="text-xs text-slate-400">
@@ -174,23 +331,17 @@ export default function PostModal({ post, onClose }: PostModalProps) {
           </div>
 
           {/* Title */}
-          <h2 className="text-xl font-bold text-slate-900 mb-3">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-900 mb-3 break-words">
             {getTitle()}
           </h2>
 
           {/* Stats Row */}
-          <div className="flex items-center gap-4 text-sm text-slate-500">
+          <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-slate-500">
             <span className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
               </svg>
               {post.upvotes || 0} upvotes
-            </span>
-            <span className="flex items-center gap-1.5">
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
-              {getComments()} comments
             </span>
             <span className="flex items-center gap-1.5">
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -202,8 +353,8 @@ export default function PostModal({ post, onClose }: PostModalProps) {
         </div>
 
         {/* Tabs */}
-        <div className="px-6 border-b border-slate-100">
-          <div className="flex gap-2">
+        <div className="px-4 sm:px-6 border-b border-slate-100 overflow-x-auto">
+          <div className="flex gap-2 min-w-max sm:min-w-0">
             <button
               onClick={() => setActiveTab("solution")}
               className={`tab-button ${activeTab === "solution" ? "active" : ""}`}
@@ -231,8 +382,8 @@ export default function PostModal({ post, onClose }: PostModalProps) {
           </div>
         </div>
 
-        {/* Tab Content */}
-        <div className="p-6 max-h-[300px] overflow-y-auto">
+            {/* Tab Content */}
+            <div className="p-4 sm:p-6 max-h-[400px] sm:max-h-[500px] overflow-y-auto">
           {activeTab === "solution" && (
             <div>
               <div className="flex items-center justify-between mb-4">
@@ -247,9 +398,13 @@ export default function PostModal({ post, onClose }: PostModalProps) {
                   {copied ? "Copied!" : "Copy Solution"}
                 </button>
               </div>
-              <p className="text-slate-600 whitespace-pre-wrap leading-relaxed">
-                {post.potential_solution || "No solution available for this post."}
-              </p>
+              <div className="solution-content">
+                {post.potential_solution ? (
+                  <FormattedSolution text={post.potential_solution} />
+                ) : (
+                  <p className="text-slate-500 italic">No solution available for this post.</p>
+                )}
+              </div>
             </div>
           )}
 
@@ -309,15 +464,15 @@ export default function PostModal({ post, onClose }: PostModalProps) {
           )}
         </div>
 
-        {/* Footer */}
-        <div className="px-6 py-4 border-t border-slate-100 flex items-center justify-between bg-slate-50/50">
-          <div className="flex items-center gap-2 flex-wrap">
-            {tags.map((tag, index) => (
-              <span key={index} className="tag-chip">
-                #{tag.replace("#", "")}
-              </span>
-            ))}
-          </div>
+            {/* Footer */}
+            <div className="px-4 sm:px-6 py-3 sm:py-4 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 bg-slate-50/50">
+              <div className="flex items-center gap-2 flex-wrap">
+                {tags.map((tag, index) => (
+                  <span key={index} className="tag-chip">
+                    #{tag.replace("#", "")}
+                  </span>
+                ))}
+              </div>
           
           <div className="flex items-center gap-2">
             <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
