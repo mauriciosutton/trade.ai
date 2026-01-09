@@ -10,6 +10,7 @@ export interface Post {
   potential_solution: string | null;
   keyword: string | null;
   topic: string | null;
+  starred: boolean;
   created_at: string;
 }
 

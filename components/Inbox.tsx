@@ -13,6 +13,7 @@ export default function Inbox() {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [sortBy, setSortBy] = useState<SortOption>("date");
   const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [showStarredOnly, setShowStarredOnly] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -75,9 +76,14 @@ export default function Inbox() {
   const filteredAndSortedPosts = useMemo(() => {
     let filtered = posts;
     
+    // Filter by starred
+    if (showStarredOnly) {
+      filtered = filtered.filter(post => post.starred === true);
+    }
+    
     // Filter by selected topic
     if (selectedTopic) {
-      filtered = posts.filter(post => 
+      filtered = filtered.filter(post => 
         post.topic?.toLowerCase().includes(selectedTopic.toLowerCase())
       );
     }
@@ -96,7 +102,7 @@ export default function Inbox() {
           return 0;
       }
     });
-  }, [posts, sortBy, selectedTopic]);
+  }, [posts, sortBy, selectedTopic, showStarredOnly]);
 
   if (loading) {
     return (
@@ -181,6 +187,33 @@ export default function Inbox() {
         </div>
         
         <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+          {/* Starred Filter Toggle */}
+          <button
+            onClick={() => setShowStarredOnly(!showStarredOnly)}
+            className={`flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-medium transition-colors ${
+              showStarredOnly
+                ? "bg-yellow-100 text-yellow-700 border border-yellow-300"
+                : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+            }`}
+          >
+            <svg
+              className={`w-4 h-4 ${
+                showStarredOnly ? "fill-yellow-400 text-yellow-400" : "fill-none text-slate-400"
+              }`}
+              fill={showStarredOnly ? "currentColor" : "none"}
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
+            {showStarredOnly ? "Starred" : "All"}
+          </button>
+          
           <span className="text-xs sm:text-sm text-slate-500">Sort:</span>
           <select
             value={sortBy}
@@ -204,7 +237,9 @@ export default function Inbox() {
           </div>
           <h3 className="text-base sm:text-lg font-semibold text-slate-900 mb-2">No problems found</h3>
           <p className="text-sm sm:text-base text-slate-500 mb-4 px-4">
-            {selectedTopic 
+            {showStarredOnly
+              ? "No starred problems found. Star cards to save them for later."
+              : selectedTopic 
               ? `No problems found with topic "${selectedTopic}"`
               : "Run a scraping job from the Discover tab to get started"
             }
@@ -225,6 +260,18 @@ export default function Inbox() {
                   key={post.id}
                   post={post}
                   onClick={() => setSelectedPost(post)}
+                  onStarChange={(postId, starred) => {
+                    // Update the post in the local state
+                    setPosts(prevPosts =>
+                      prevPosts.map(p =>
+                        p.id === postId ? { ...p, starred } : p
+                      )
+                    );
+                    // Update selected post if it's the one being starred
+                    if (selectedPost?.id === postId) {
+                      setSelectedPost({ ...selectedPost, starred });
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -234,6 +281,18 @@ export default function Inbox() {
       <PostModal
         post={selectedPost}
         onClose={() => setSelectedPost(null)}
+        onStarChange={(postId, starred) => {
+          // Update the post in the local state
+          setPosts(prevPosts =>
+            prevPosts.map(p =>
+              p.id === postId ? { ...p, starred } : p
+            )
+          );
+          // Update selected post if it's the one being starred
+          if (selectedPost?.id === postId) {
+            setSelectedPost({ ...selectedPost, starred });
+          }
+        }}
       />
     </div>
   );

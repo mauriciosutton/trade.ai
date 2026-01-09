@@ -21,6 +21,7 @@ model Post {
   postSummary       String?   @map("post_summary") @db.Text
   potentialSolution String?   @map("potential_solution") @db.Text
   keyword           String?
+  starred           Boolean   @default(false)
   createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   cardPlacements CardPlacement[]
